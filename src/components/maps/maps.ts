@@ -1,7 +1,12 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { Geolocation } from 'ionic-native';
+import { Geolocation,GoogleMap,GoogleMapsEvent,
+  GoogleMapsLatLng,
+  CameraPosition,
+  GoogleMapsMarkerOptions,
+  GoogleMapsMarker } from 'ionic-native';
+import {NavController, Platform} from "ionic-angular";
 
-declare var google;
+
 /*
   Generated class for the Maps component.
 
@@ -9,8 +14,8 @@ declare var google;
   for more info on Angular 2 Components.
 */
 @Component({
-  selector: 'maps',
-  templateUrl: 'maps.html'
+  templateUrl:'./maps.html',
+  selector: 'maps'
 })
 export class MapsComponent {
 
@@ -19,31 +24,45 @@ export class MapsComponent {
 
 
 
-  constructor() {
+  constructor( platform:Platform) {
+    platform.ready().then(() => {
+      this.loadMap();
+    })
 
   }
 
-  ionViewLoaded(){
-    this.loadMap();
-  }
 
-  loadMap(){
+
+  loadMap() {
+    console.log('WHAT')
 
     Geolocation.getCurrentPosition().then((position) => {
 
-      let latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+      let element: HTMLElement = document.getElementById('map');
 
-      let mapOptions = {
-        center: latLng,
-        zoom: 15,
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-      }
+      let map = new GoogleMap(element);
 
-      this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
+      // listen to MAP_READY event
+      map.one(GoogleMapsEvent.MAP_READY).then(() => {
+        console.log('Map is ready!');
 
-    }, (err) => {
+        let ionic: GoogleMapsLatLng = new GoogleMapsLatLng(40.447862, -3.668751)//position.coords.latitude, position.coords.longitude);
+        console.log("ionic",ionic)
+        let position1: CameraPosition = {
+          target: ionic,
+          zoom: 18,
+          tilt: 30
+        };
+
+        // move the map's camera to position
+        map.moveCamera(position1);
+
+      }).catch( (err) => {
+        console.log(err);
+      })
+
+    }).catch( (err) => {
       console.log(err);
-    });
-
+    })
   }
 }
